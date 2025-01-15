@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,17 +50,16 @@ internal sealed class ExamplePlugin : IASF, IBot, IBotCommand2, IBotConnection, 
 	// This is used for identification purposes, typically you want to use a friendly name of your plugin here, such as the name of your main class
 	// Please note that this property can have direct dependencies only on structures that were initialized by the constructor, as it's possible to be called before OnLoaded() takes place
 	[JsonInclude]
-	[Required]
 	public string Name => nameof(ExamplePlugin);
 
 	// This will be displayed to the user and written in the log file, typically you should point it to the version of your library, but alternatively you can do some more advanced logic if you'd like to
 	// Please note that this property can have direct dependencies only on structures that were initialized by the constructor, as it's possible to be called before OnLoaded() takes place
 	[JsonInclude]
-	[Required]
 	public Version Version => typeof(ExamplePlugin).Assembly.GetName().Version ?? throw new InvalidOperationException(nameof(Version));
 
-	// Plugins can expose custom properties for our GET /Api/Plugins API call, simply annotate them with [JsonProperty] (or keep public)
+	// Plugins can expose custom properties for our GET /Api/Plugins API call, simply annotate them with [JsonInclude] (or keep public)
 	[JsonInclude]
+	[JsonRequired]
 	[Required]
 	public bool CustomIsEnabledField { get; private init; } = true;
 

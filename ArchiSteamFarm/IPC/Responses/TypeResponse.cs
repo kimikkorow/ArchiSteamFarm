@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,28 +24,20 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace ArchiSteamFarm.IPC.Responses;
 
 public sealed class TypeResponse {
-	/// <summary>
-	///     A string-string map representing a decomposition of given type.
-	/// </summary>
-	/// <remarks>
-	///     The actual structure of this field depends on the type that was requested. You can determine that type based on <see cref="Properties" /> metadata.
-	///     For enums, keys are friendly names while values are underlying values of those names.
-	///     For objects, keys are non-private fields and properties, while values are underlying types of those.
-	/// </remarks>
+	[Description($"A string-string map representing a decomposition of given type. The actual structure of this field depends on the type that was requested. You can determine that type based on {nameof(Properties)} metadata. For enums, keys are friendly names while values are underlying values of those names. For objects, keys are non-private fields and properties, while values are underlying types of those")]
 	[JsonInclude]
 	[JsonRequired]
 	[Required]
 	public ImmutableDictionary<string, string> Body { get; private init; }
 
-	/// <summary>
-	///     Metadata of given type.
-	/// </summary>
+	[Description("Metadata of given type")]
 	[JsonInclude]
 	[JsonRequired]
 	[Required]

@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -1530,17 +1530,6 @@ public sealed class ArchiWebHandler : IDisposable {
 		return true;
 	}
 
-	internal async Task<bool> ClearFromDiscoveryQueue(uint appID) {
-		ArgumentOutOfRangeException.ThrowIfZero(appID);
-
-		Uri request = new(SteamStoreURL, $"/app/{appID}");
-
-		// Extra entry for sessionID
-		Dictionary<string, string> data = new(2, StringComparer.Ordinal) { { "appid_to_clear_from_queue", appID.ToString(CultureInfo.InvariantCulture) } };
-
-		return await UrlPostWithSession(request, data: data).ConfigureAwait(false);
-	}
-
 	internal async Task<bool> DeclineTradeOffer(ulong tradeID) {
 		ArgumentOutOfRangeException.ThrowIfZero(tradeID);
 
@@ -1550,17 +1539,6 @@ public sealed class ArchiWebHandler : IDisposable {
 	}
 
 	internal HttpClient GenerateDisposableHttpClient() => WebBrowser.GenerateDisposableHttpClient();
-
-	internal async Task<ImmutableHashSet<uint>?> GenerateNewDiscoveryQueue() {
-		Uri request = new(SteamStoreURL, "/explore/generatenewdiscoveryqueue");
-
-		// Extra entry for sessionID
-		Dictionary<string, string> data = new(2, StringComparer.Ordinal) { { "queuetype", "0" } };
-
-		ObjectResponse<NewDiscoveryQueueResponse>? response = await UrlPostToJsonObjectWithSession<NewDiscoveryQueueResponse>(request, data: data).ConfigureAwait(false);
-
-		return response?.Content?.Queue;
-	}
 
 	internal async Task<HashSet<uint>?> GetAppList() {
 		KeyValue? response = null;
@@ -1791,14 +1769,6 @@ public sealed class ArchiWebHandler : IDisposable {
 		}
 
 		return results;
-	}
-
-	internal async Task<IDocument?> GetDiscoveryQueuePage() {
-		Uri request = new(SteamStoreURL, "/explore?l=english");
-
-		HtmlDocumentResponse? response = await UrlGetToHtmlDocumentWithSession(request, checkSessionPreemptively: false).ConfigureAwait(false);
-
-		return response?.Content;
 	}
 
 	internal async Task<HashSet<ulong>?> GetFamilySharingSteamIDs() {

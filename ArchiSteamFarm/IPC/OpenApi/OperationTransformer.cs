@@ -1,4 +1,4 @@
-// ----------------------------------------------------------------------------------------------
+﻿// ----------------------------------------------------------------------------------------------
 //     _                _      _  ____   _                           _____
 //    / \    _ __  ___ | |__  (_)/ ___| | |_  ___   __ _  _ __ ___  |  ___|__ _  _ __  _ __ ___
 //   / _ \  | '__|/ __|| '_ \ | |\___ \ | __|/ _ \ / _` || '_ ` _ \ | |_  / _` || '__|| '_ ` _ \
@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,31 +22,43 @@
 // limitations under the License.
 
 using System;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using ArchiSteamFarm.Storage;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace ArchiSteamFarm.IPC.Integration;
+namespace ArchiSteamFarm.IPC.OpenApi;
 
+#pragma warning disable CA1812 // False positive, the class is used internally
 [UsedImplicitly]
-internal sealed class CustomAttributesSchemaFilter : ISchemaFilter {
-	public void Apply(OpenApiSchema schema, SchemaFilterContext context) {
-		ArgumentNullException.ThrowIfNull(schema);
+internal sealed class OperationTransformer : IOpenApiOperationTransformer {
+	public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken) {
+		ArgumentNullException.ThrowIfNull(operation);
 		ArgumentNullException.ThrowIfNull(context);
 
-		ICustomAttributeProvider attributesProvider;
+		if (context.Description.RelativePath?.StartsWith("Api", StringComparison.OrdinalIgnoreCase) == true) {
+			operation.Security ??= new List<OpenApiSecurityRequirement>(1);
 
-		if (context.MemberInfo != null) {
-			attributesProvider = context.MemberInfo;
-		} else if (context.ParameterInfo != null) {
-			attributesProvider = context.ParameterInfo;
-		} else {
-			return;
+			operation.Security.Add(
+				new OpenApiSecurityRequirement {
+					{
+						new OpenApiSecurityScheme {
+							Reference = new OpenApiReference {
+								Id = nameof(GlobalConfig.IPCPassword),
+								Type = ReferenceType.SecurityScheme
+							}
+						},
+
+						Array.Empty<string>()
+					}
+				}
+			);
 		}
 
-		foreach (CustomSwaggerAttribute customSwaggerAttribute in attributesProvider.GetCustomAttributes(typeof(CustomSwaggerAttribute), true)) {
-			customSwaggerAttribute.Apply(schema);
-		}
+		return Task.CompletedTask;
 	}
 }
+#pragma warning restore CA1812 // False positive, the class is used internally
