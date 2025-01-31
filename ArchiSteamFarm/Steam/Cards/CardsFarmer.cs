@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,6 @@ using ArchiSteamFarm.Steam.Storage;
 using ArchiSteamFarm.Storage;
 using ArchiSteamFarm.Web;
 using JetBrains.Annotations;
-using SteamKit2;
 
 namespace ArchiSteamFarm.Steam.Cards;
 
@@ -68,18 +67,15 @@ public sealed class CardsFarmer : IAsyncDisposable, IDisposable {
 	[JsonInclude]
 	[JsonPropertyName(nameof(CurrentGamesFarming))]
 	[PublicAPI]
-	[Required]
 	public IReadOnlyCollection<Game> CurrentGamesFarmingReadOnly => CurrentGamesFarming;
 
 	[JsonInclude]
 	[JsonPropertyName(nameof(GamesToFarm))]
 	[PublicAPI]
-	[Required]
 	public IReadOnlyCollection<Game> GamesToFarmReadOnly => GamesToFarm;
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public TimeSpan TimeRemaining {
 		get {
 			if (GamesToFarm.Count == 0) {
@@ -1496,11 +1492,11 @@ public sealed class CardsFarmer : IAsyncDisposable, IDisposable {
 
 					foreach (Game game in GamesToFarm) {
 						DateTime redeemDate = DateTime.MinValue;
-						HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(game.AppID, Bot.OwnedPackageIDs.Keys);
+						HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(game.AppID, Bot.OwnedPackages.Keys);
 
 						if (packageIDs != null) {
 							foreach (uint packageID in packageIDs) {
-								if (!Bot.OwnedPackageIDs.TryGetValue(packageID, out (EPaymentMethod PaymentMethod, DateTime TimeCreated) packageData)) {
+								if (!Bot.OwnedPackages.TryGetValue(packageID, out LicenseData? packageData)) {
 									Bot.ArchiLogger.LogNullError(packageData);
 
 									return;

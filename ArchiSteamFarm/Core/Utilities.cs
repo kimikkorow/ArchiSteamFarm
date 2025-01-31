@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,6 +61,13 @@ public static class Utilities {
 
 		// See: https://github.com/dotnet/runtime/discussions/50687
 		return collection.Select(static entry => entry);
+	}
+
+	[PublicAPI]
+	public static string AsMasked(this string text, char mask = '*') {
+		ArgumentNullException.ThrowIfNull(text);
+
+		return new string(mask, text.Length);
 	}
 
 	[PublicAPI]

@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -154,6 +154,7 @@ public abstract class SerializableFile : IDisposable {
 
 		try {
 			// We always want to write entire content to temporary file first, in order to never load corrupted data, also when target file doesn't exist
+#pragma warning disable CA3003 // Ignored due to caller's intent
 			if (File.Exists(filePath)) {
 				string currentJson = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
@@ -169,6 +170,7 @@ public abstract class SerializableFile : IDisposable {
 
 				File.Move(newFilePath, filePath);
 			}
+#pragma warning restore CA3003 // Ignored due to caller's intent
 
 			return true;
 		} catch (Exception e) {

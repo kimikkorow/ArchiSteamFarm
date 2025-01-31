@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<DefaultItemExcludes>$(DefaultItemExcludes);config/**;debug/**;logs/**;overlay/**</DefaultItemExcludes>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<OutputType>Exe</OutputType>
 	</PropertyGroup>
 
@@ -11,6 +10,7 @@
 		<PackageReference Include="Humanizer" />
 		<PackageReference Include="JetBrains.Annotations" PrivateAssets="all" />
 		<PackageReference Include="Markdig.Signed" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Microsoft.CodeAnalysis.ResxSourceGenerator" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
 		<PackageReference Include="Nito.AsyncEx.Coordination" />

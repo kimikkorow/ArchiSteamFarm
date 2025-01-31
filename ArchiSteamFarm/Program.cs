@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,6 +59,7 @@ internal static class Program {
 	internal static bool Service { get; private set; }
 	internal static bool ShutdownSequenceInitialized { get; private set; }
 	internal static bool SteamParentalGeneration { get; private set; } = true;
+	internal static bool UseOpenApi { get; private set; }
 
 	private static readonly Dictionary<PosixSignal, PosixSignalRegistration> RegisteredPosixSignals = new();
 	private static readonly TaskCompletionSource<byte> ShutdownResetEvent = new();
@@ -609,6 +610,10 @@ internal static class Program {
 					break;
 				case "--SYSTEM-REQUIRED" when noArgumentValueNext():
 					SystemRequired = true;
+
+					break;
+				case "--USE-OPENAPI" when noArgumentValueNext():
+					UseOpenApi = true;
 
 					break;
 				default:

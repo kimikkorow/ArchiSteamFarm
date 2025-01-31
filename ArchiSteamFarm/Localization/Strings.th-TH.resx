@@ -476,8 +476,6 @@ StackTrace:
 		<comment>{0} will be replaced by number (in megabytes) of memory being used, {1} will be replaced by translated TimeSpan string (such as "25 minutes"). Please note that this string should include newlines for formatting.</comment>
 	</data>
 	
-	
-	
 	<data name="BotRefreshingPackagesData" xml:space="preserve">
 		<value>กำลังรีเฟรชข้อมูลแพ็กเกจ…</value>
 	</data>
@@ -571,6 +569,7 @@ StackTrace:
 		<value>โปรดกรอกคีย์รหัสลับของคุณ: </value>
 		<comment>Please note that this translation should end with space</comment>
 	</data>
+	
 	
 	
 	

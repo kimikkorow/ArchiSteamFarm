@@ -1,6 +1,6 @@
 <Project>
 	<PropertyGroup>
-		<Version>6.1.1.1</Version>
+		<Version>6.1.2.3</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -14,10 +14,10 @@
 		<Description>ASF is a C# application with primary purpose of idling Steam cards from multiple accounts simultaneously.</Description>
 		<Deterministic>true</Deterministic>
 		<ErrorReport>none</ErrorReport>
-		<LangVersion>latest</LangVersion>
+		<LangVersion>preview</LangVersion>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 		<NeutralLanguage>en</NeutralLanguage>
-		<NoWarn>CS1591</NoWarn>
+		<NoWarn>CA1028,CA1031,CS1591</NoWarn>
 		<Nullable>enable</Nullable>
 		<PackageIcon>../resources/ASF.ico</PackageIcon>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
