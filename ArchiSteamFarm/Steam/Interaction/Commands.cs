@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -140,12 +141,14 @@ public sealed class Commands {
 						return ResponseFarmingQueue(access);
 					case "HELP":
 						return ResponseHelp(access);
-					case "MAB":
-						return ResponseMatchActivelyBlacklist(access);
+					case "INVENTORY":
+						return await ResponseInventory(access).ConfigureAwait(false);
 					case "LEVEL":
 						return await ResponseLevel(access).ConfigureAwait(false);
 					case "LOOT":
 						return await ResponseLoot(access).ConfigureAwait(false);
+					case "MAB":
+						return ResponseMatchActivelyBlacklist(access);
 					case "PAUSE":
 						return await ResponsePause(access, true).ConfigureAwait(false);
 					case "PAUSE~":
@@ -233,6 +236,8 @@ public sealed class Commands {
 						return await ResponseInput(access, args[1], args[2], Utilities.GetArgsAsText(message, 3), steamID).ConfigureAwait(false);
 					case "INPUT" when args.Length > 2:
 						return ResponseInput(access, args[1], args[2]);
+					case "INVENTORY":
+						return await ResponseInventory(access, Utilities.GetArgsAsText(args, 1, ","), steamID).ConfigureAwait(false);
 					case "LEVEL":
 						return await ResponseLevel(access, Utilities.GetArgsAsText(args, 1, ","), steamID).ConfigureAwait(false);
 					case "LOOT":
@@ -666,7 +671,7 @@ public sealed class Commands {
 
 			switch (type.ToUpperInvariant()) {
 				case "A" or "APP": {
-					HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(gameID, Bot.OwnedPackageIDs.Keys, 1);
+					HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(gameID, Bot.OwnedPackages.Keys, 1);
 
 					if (packageIDs is { Count: > 0 }) {
 						response.AppendLine(FormatBotResponse(Strings.FormatBotAddLicense($"app/{gameID}", $"{EResult.Fail}/{EPurchaseResultDetail.AlreadyPurchased}")));
@@ -690,7 +695,7 @@ public sealed class Commands {
 					break;
 				}
 				default: {
-					if (Bot.OwnedPackageIDs.ContainsKey(gameID)) {
+					if (Bot.OwnedPackages.ContainsKey(gameID)) {
 						response.AppendLine(FormatBotResponse(Strings.FormatBotAddLicense($"sub/{gameID}", $"{EResult.Fail}/{EPurchaseResultDetail.AlreadyPurchased}")));
 
 						break;
@@ -1664,6 +1669,64 @@ public sealed class Commands {
 		return responses.Count > 0 ? string.Join(Environment.NewLine, responses) : null;
 	}
 
+	private async Task<string?> ResponseInventory(EAccess access) {
+		if (!Enum.IsDefined(access)) {
+			throw new InvalidEnumArgumentException(nameof(access), (int) access, typeof(EAccess));
+		}
+
+		if (access < EAccess.Operator) {
+			return null;
+		}
+
+		if (!Bot.IsConnectedAndLoggedOn) {
+			return FormatBotResponse(Strings.BotNotConnected);
+		}
+
+		ImmutableDictionary<uint, InventoryAppData>? inventory = await Bot.ArchiWebHandler.GetInventoryContextData().ConfigureAwait(false);
+
+		if (inventory == null) {
+			return FormatBotResponse(Strings.WarningFailed);
+		}
+
+		if (inventory.Count == 0) {
+			return FormatBotResponse(Strings.FormatErrorIsEmpty(nameof(inventory)));
+		}
+
+		StringBuilder response = new();
+
+		foreach (InventoryAppData appData in inventory.Values) {
+			foreach (InventoryContextData? contextData in appData.Contexts.Values) {
+				if (response.Length > 0) {
+					response.AppendLine();
+				}
+
+				response.Append(FormatBotResponse(Strings.FormatBotInventory(appData.AppID, contextData.ID, appData.Name, contextData.Name, contextData.AssetsCount)));
+			}
+		}
+
+		return response.ToString();
+	}
+
+	private static async Task<string?> ResponseInventory(EAccess access, string botNames, ulong steamID = 0) {
+		if (!Enum.IsDefined(access)) {
+			throw new InvalidEnumArgumentException(nameof(access), (int) access, typeof(EAccess));
+		}
+
+		ArgumentException.ThrowIfNullOrEmpty(botNames);
+
+		HashSet<Bot>? bots = Bot.GetBots(botNames);
+
+		if ((bots == null) || (bots.Count == 0)) {
+			return access >= EAccess.Owner ? FormatStaticResponse(Strings.FormatBotNotFound(botNames)) : null;
+		}
+
+		IList<string?> results = await Utilities.InParallel(bots.Select(bot => bot.Commands.ResponseInventory(GetProxyAccess(bot, access, steamID)))).ConfigureAwait(false);
+
+		List<string> responses = [..results.Where(static result => !string.IsNullOrEmpty(result))!];
+
+		return responses.Count > 0 ? string.Join(Environment.NewLine, responses) : null;
+	}
+
 	private async Task<string?> ResponseLevel(EAccess access) {
 		if (!Enum.IsDefined(access)) {
 			throw new InvalidEnumArgumentException(nameof(access), (int) access, typeof(EAccess));
@@ -2020,7 +2083,7 @@ public sealed class Commands {
 
 			switch (type.ToUpperInvariant()) {
 				case "A" or "APP" when uint.TryParse(game, out uint appID) && (appID > 0):
-					HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(appID, Bot.OwnedPackageIDs.Keys, 1);
+					HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(appID, Bot.OwnedPackages.Keys, 1);
 
 					if (packageIDs?.Count > 0) {
 						if ((gamesOwned != null) && gamesOwned.TryGetValue(appID, out string? cachedGameName)) {
@@ -2054,7 +2117,9 @@ public sealed class Commands {
 					Regex regex;
 
 					try {
-						regex = new Regex(game, RegexOptions.CultureInvariant);
+#pragma warning disable CA3012 // We're aware of a potential denial of service here, this is why we limit maximum matching time to a sane value
+						regex = new Regex(game, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+#pragma warning restore CA3012 // We're aware of a potential denial of service here, this is why we limit maximum matching time to a sane value
 					} catch (ArgumentException e) {
 						Bot.ArchiLogger.LogGenericWarningException(e);
 						response.AppendLine(FormatBotResponse(Strings.FormatErrorIsInvalid(nameof(regex))));
@@ -2074,11 +2139,18 @@ public sealed class Commands {
 
 					bool foundWithRegex = false;
 
-					foreach ((uint appID, string gameName) in gamesOwned.Where(gameOwned => regex.IsMatch(gameOwned.Value))) {
-						foundWithRegex = true;
+					try {
+						foreach ((uint appID, string gameName) in gamesOwned.Where(gameOwned => regex.IsMatch(gameOwned.Value))) {
+							foundWithRegex = true;
 
-						result[$"app/{appID}"] = gameName;
-						response.AppendLine(FormatBotResponse(Strings.FormatBotOwnedAlreadyWithName($"app/{appID}", gameName)));
+							result[$"app/{appID}"] = gameName;
+							response.AppendLine(FormatBotResponse(Strings.FormatBotOwnedAlreadyWithName($"app/{appID}", gameName)));
+						}
+					} catch (RegexMatchTimeoutException e) {
+						Bot.ArchiLogger.LogGenericWarningException(e);
+						response.AppendLine(FormatBotResponse(Strings.FormatWarningFailedWithError(nameof(regex))));
+
+						break;
 					}
 
 					if (!foundWithRegex) {
@@ -2087,7 +2159,7 @@ public sealed class Commands {
 
 					continue;
 				case "S" or "SUB" when uint.TryParse(game, out uint packageID) && (packageID > 0):
-					if (Bot.OwnedPackageIDs.ContainsKey(packageID)) {
+					if (Bot.OwnedPackages.ContainsKey(packageID)) {
 						result[$"sub/{packageID}"] = packageID.ToString(CultureInfo.InvariantCulture);
 						response.AppendLine(FormatBotResponse(Strings.FormatBotOwnedAlready($"sub/{packageID}")));
 					} else {
@@ -2658,7 +2730,7 @@ public sealed class Commands {
 
 										bool alreadyHandled = false;
 
-										foreach (Bot innerBot in Bot.Bots.Where(bot => (bot.Value != currentBot) && (!redeemFlags.HasFlag(ERedeemFlags.SkipInitial) || (bot.Value != Bot)) && !triedBots.Contains(bot.Value) && !rateLimitedBots.Contains(bot.Value) && bot.Value.IsConnectedAndLoggedOn && ((access >= EAccess.Owner) || ((steamID != 0) && (bot.Value.GetAccess(steamID) >= EAccess.Operator))) && ((items.Count == 0) || items.Keys.Any(packageID => !bot.Value.OwnedPackageIDs.ContainsKey(packageID)))).OrderBy(static bot => bot.Key, Bot.BotsComparer).Select(static bot => bot.Value)) {
+										foreach (Bot innerBot in Bot.Bots.Where(bot => (bot.Value != currentBot) && (!redeemFlags.HasFlag(ERedeemFlags.SkipInitial) || (bot.Value != Bot)) && !triedBots.Contains(bot.Value) && !rateLimitedBots.Contains(bot.Value) && bot.Value.IsConnectedAndLoggedOn && ((access >= EAccess.Owner) || ((steamID != 0) && (bot.Value.GetAccess(steamID) >= EAccess.Operator))) && ((items.Count == 0) || items.Keys.Any(packageID => !bot.Value.OwnedPackages.ContainsKey(packageID)))).OrderBy(static bot => bot.Key, Bot.BotsComparer).Select(static bot => bot.Value)) {
 											CStore_RegisterCDKey_Response? redeemResponse = await innerBot.Actions.RedeemKey(key).ConfigureAwait(false);
 
 											if (redeemResponse == null) {

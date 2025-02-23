@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -29,9 +30,7 @@ namespace ArchiSteamFarm.IPC.Requests;
 
 [SuppressMessage("ReSharper", "ClassCannotBeInstantiated")]
 public sealed class CommandRequest {
-	/// <summary>
-	///     Specifies the command that will be executed by ASF.
-	/// </summary>
+	[Description("Specifies the command that will be executed by ASF")]
 	[JsonInclude]
 	[JsonRequired]
 	[Required]

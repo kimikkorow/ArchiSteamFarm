@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,19 +21,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
+using SteamKit2.Internal;
 
-namespace ArchiSteamFarm.Steam.Data;
+namespace ArchiSteamFarm.IPC.Responses;
 
-[SuppressMessage("ReSharper", "ClassCannotBeInstantiated")]
-internal sealed class NewDiscoveryQueueResponse {
+public sealed class BotInventoryResponse {
+	[Description("Inventory assets")]
 	[JsonInclude]
-	[JsonPropertyName("queue")]
-	[JsonRequired]
-	internal ImmutableHashSet<uint> Queue { get; private init; } = [];
+	public ImmutableHashSet<CEcon_Asset>? Assets { get; private init; }
 
-	[JsonConstructor]
-	private NewDiscoveryQueueResponse() { }
+	[Description("Descriptions of the inventory assets")]
+	[JsonInclude]
+	public ImmutableHashSet<CEconItem_Description>? Descriptions { get; private init; }
+
+	internal BotInventoryResponse(IEnumerable<CEcon_Asset>? assets = null, IEnumerable<CEconItem_Description>? descriptions = null) {
+		Assets = assets?.ToImmutableHashSet();
+		Descriptions = descriptions?.ToImmutableHashSet();
+	}
 }

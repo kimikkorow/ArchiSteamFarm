@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,17 +34,15 @@ namespace ArchiSteamFarm.Steam.Data;
 internal sealed class InventoryResponse : OptionalResultResponse {
 	internal EResult? ErrorCode {
 		get {
-			if (CachedErrorCode.HasValue) {
-				return CachedErrorCode;
+			if (field.HasValue) {
+				return field;
 			}
 
 			if (string.IsNullOrEmpty(ErrorText)) {
 				return null;
 			}
 
-			CachedErrorCode = SteamUtilities.InterpretError(ErrorText);
-
-			return CachedErrorCode;
+			return field = SteamUtilities.InterpretError(ErrorText);
 		}
 	}
 
@@ -67,7 +65,7 @@ internal sealed class InventoryResponse : OptionalResultResponse {
 	[JsonPropertyName("last_assetid")]
 	internal ulong LastAssetID { get; private init; }
 
-	[JsonConverter(typeof(BooleanNumberConverter))]
+	[JsonConverter(typeof(BooleanNormalizationConverter))]
 	[JsonInclude]
 	[JsonPropertyName("more_items")]
 	internal bool MoreItems { get; private init; }
@@ -75,8 +73,6 @@ internal sealed class InventoryResponse : OptionalResultResponse {
 	[JsonInclude]
 	[JsonPropertyName("total_inventory_count")]
 	internal uint TotalInventoryCount { get; private init; }
-
-	private EResult? CachedErrorCode;
 
 	[JsonConstructor]
 	private InventoryResponse() { }

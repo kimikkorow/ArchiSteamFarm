@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,7 @@ using JetBrains.Annotations;
 
 namespace ArchiSteamFarm.Helpers.Json;
 
+[Obsolete($"Use {nameof(BooleanNormalizationConverter)} instead if you want to always serialize as booleans, or roll out your own solution that would preserve original type. This helper class will be removed in the next ASF version, as we switched to the other converter instead.")]
 [PublicAPI]
 public sealed class BooleanNumberConverter : JsonConverter<bool> {
 	public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>

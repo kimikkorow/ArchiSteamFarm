@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -42,11 +41,9 @@ namespace ArchiSteamFarm.OfficialPlugins.MobileAuthenticator;
 [SuppressMessage("ReSharper", "MemberCanBeFileLocal")]
 internal sealed class MobileAuthenticatorPlugin : OfficialPlugin, IBotCommand2, IBotSteamClient {
 	[JsonInclude]
-	[Required]
 	public override string Name => nameof(MobileAuthenticatorPlugin);
 
 	[JsonInclude]
-	[Required]
 	public override Version Version => typeof(MobileAuthenticatorPlugin).Assembly.GetName().Version ?? throw new InvalidOperationException(nameof(Version));
 
 	public async Task<string?> OnBotCommand(Bot bot, EAccess access, string message, string[] args, ulong steamID = 0) {

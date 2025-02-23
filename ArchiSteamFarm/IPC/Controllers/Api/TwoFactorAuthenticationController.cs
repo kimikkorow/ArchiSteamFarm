@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,15 +33,14 @@ using ArchiSteamFarm.Localization;
 using ArchiSteamFarm.Steam;
 using ArchiSteamFarm.Steam.Data;
 using ArchiSteamFarm.Steam.Security;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchiSteamFarm.IPC.Controllers.Api;
 
 [Route("Api/Bot/{botNames:required}/TwoFactorAuthentication")]
 public sealed class TwoFactorAuthenticationController : ArchiController {
-	/// <summary>
-	///     Fetches pending 2FA confirmations of given bots, requires ASF 2FA module to be active on them.
-	/// </summary>
+	[EndpointSummary("Fetches pending 2FA confirmations of given bots, requires ASF 2FA module to be active on them")]
 	[HttpGet("Confirmations")]
 	[ProducesResponseType<GenericResponse<IReadOnlyDictionary<string, GenericResponse<IReadOnlyCollection<Confirmation>>>>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]
@@ -66,10 +65,7 @@ public sealed class TwoFactorAuthenticationController : ArchiController {
 		return Ok(new GenericResponse<IReadOnlyDictionary<string, GenericResponse<IReadOnlyCollection<Confirmation>>>>(result));
 	}
 
-	/// <summary>
-	///     Handles 2FA confirmations of given bots, requires ASF 2FA module to be active on them.
-	/// </summary>
-	[Consumes("application/json")]
+	[EndpointSummary("Handles 2FA confirmations of given bots, requires ASF 2FA module to be active on them")]
 	[HttpPost("Confirmations")]
 	[ProducesResponseType<GenericResponse<IReadOnlyDictionary<string, GenericResponse<IReadOnlyCollection<Confirmation>>>>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]
@@ -99,9 +95,7 @@ public sealed class TwoFactorAuthenticationController : ArchiController {
 		return Ok(new GenericResponse<IReadOnlyDictionary<string, GenericResponse<IReadOnlyCollection<Confirmation>>>>(result));
 	}
 
-	/// <summary>
-	///     Deletes the MobileAuthenticator of given bots if an ASF 2FA module is active on them.
-	/// </summary>
+	[EndpointSummary("Deletes the MobileAuthenticator of given bots if an ASF 2FA module is active on them")]
 	[HttpDelete]
 	[ProducesResponseType<GenericResponse<IReadOnlyDictionary<string, GenericResponse<string>>>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]
@@ -126,10 +120,7 @@ public sealed class TwoFactorAuthenticationController : ArchiController {
 		return Ok(new GenericResponse<IReadOnlyDictionary<string, GenericResponse<string>>>(result));
 	}
 
-	/// <summary>
-	///     Imports a MobileAuthenticator into the ASF 2FA module of a given bot.
-	/// </summary>
-	[Consumes("application/json")]
+	[EndpointSummary("Imports a MobileAuthenticator into the ASF 2FA module of a given bot")]
 	[HttpPost]
 	[ProducesResponseType<GenericResponse<IReadOnlyDictionary<string, GenericResponse>>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]
@@ -155,9 +146,7 @@ public sealed class TwoFactorAuthenticationController : ArchiController {
 		return Ok(new GenericResponse<IReadOnlyDictionary<string, GenericResponse>>(result));
 	}
 
-	/// <summary>
-	///     Fetches 2FA tokens of given bots, requires ASF 2FA module to be active on them.
-	/// </summary>
+	[EndpointSummary("Fetches 2FA tokens of given bots, requires ASF 2FA module to be active on them")]
 	[HttpGet("Token")]
 	[ProducesResponseType<GenericResponse<IReadOnlyDictionary<string, GenericResponse<string>>>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]
