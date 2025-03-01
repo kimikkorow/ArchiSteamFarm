@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,26 +21,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Text.Json;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
+using SteamKit2.Internal;
 
-namespace ArchiSteamFarm.Helpers.Json;
+namespace ArchiSteamFarm.IPC.Responses;
 
-[PublicAPI]
-public sealed class BooleanNumberConverter : JsonConverter<bool> {
-	public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-		reader.TokenType switch {
-			JsonTokenType.True => true,
-			JsonTokenType.False => false,
-			JsonTokenType.Number => reader.GetByte() == 1,
-			_ => throw new JsonException()
-		};
+public sealed class BotInventoryResponse {
+	[Description("Inventory assets")]
+	[JsonInclude]
+	public ImmutableHashSet<CEcon_Asset>? Assets { get; private init; }
 
-	public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options) {
-		ArgumentNullException.ThrowIfNull(writer);
+	[Description("Descriptions of the inventory assets")]
+	[JsonInclude]
+	public ImmutableHashSet<CEconItem_Description>? Descriptions { get; private init; }
 
-		writer.WriteNumberValue(value ? 1 : 0);
+	internal BotInventoryResponse(IEnumerable<CEcon_Asset>? assets = null, IEnumerable<CEconItem_Description>? descriptions = null) {
+		Assets = assets?.ToImmutableHashSet();
+		Descriptions = descriptions?.ToImmutableHashSet();
 	}
 }

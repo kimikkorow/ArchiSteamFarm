@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -106,12 +106,10 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public string BotName { get; }
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public CardsFarmer CardsFarmer { get; }
 
 	[JsonIgnore]
@@ -120,12 +118,10 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public uint GamesToRedeemInBackgroundCount => BotDatabase.GamesToRedeemInBackgroundCount;
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public bool HasMobileAuthenticator => BotDatabase.MobileAuthenticator != null;
 
 	[JsonIgnore]
@@ -138,12 +134,10 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public bool IsConnectedAndLoggedOn => SteamClient.SteamID != null;
 
 	[JsonInclude]
 	[PublicAPI]
-	[Required]
 	public bool IsPlayingPossible => !PlayingBlocked && !LibraryLocked;
 
 	[JsonInclude]
@@ -153,7 +147,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 	[JsonInclude]
 	[JsonPropertyName($"{SharedInfo.UlongCompatibilityStringPrefix}{nameof(SteamID)}")]
 	[PublicAPI]
-	[Required]
 	public string SSteamID => SteamID.ToString(CultureInfo.InvariantCulture);
 
 	[JsonIgnore]
@@ -205,13 +198,13 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 	[JsonIgnore]
 	[PublicAPI]
 	public string? AccessToken {
-		get => BackingAccessToken;
+		get;
 
 		private set {
 			AccessTokenValidUntil = null;
 
 			if (string.IsNullOrEmpty(value)) {
-				BackingAccessToken = null;
+				field = null;
 
 				return;
 			}
@@ -222,7 +215,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 				return;
 			}
 
-			BackingAccessToken = value;
+			field = value;
 
 			if (accessToken.ValidTo > DateTime.MinValue) {
 				AccessTokenValidUntil = accessToken.ValidTo;
@@ -258,7 +251,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 	[JsonIgnore]
 	[PublicAPI]
-	public FrozenDictionary<uint, (EPaymentMethod PaymentMethod, DateTime TimeCreated)> OwnedPackageIDs { get; private set; } = FrozenDictionary<uint, (EPaymentMethod PaymentMethod, DateTime TimeCreated)>.Empty;
+	public FrozenDictionary<uint, LicenseData> OwnedPackages { get; private set; } = FrozenDictionary<uint, LicenseData>.Empty;
 
 	[JsonInclude]
 	[JsonRequired]
@@ -296,7 +289,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 	private DateTime? AccessTokenValidUntil;
 	private string? AuthCode;
-	private string? BackingAccessToken;
 	private CancellationTokenSource? CallbacksAborted;
 	private Timer? ConnectionFailureTimer;
 	private bool FirstTradeSent;
@@ -314,7 +306,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 	private bool SendCompleteTypesScheduled;
 	private Timer? SendItemsTimer;
 	private bool SteamParentalActive;
-	private SteamSaleEvent? SteamSaleEvent;
 	private Timer? TradeCheckTimer;
 	private string? TwoFactorCode;
 	private bool UnpackBoosterPacksScheduled;
@@ -427,7 +418,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 		PlayingWasBlockedTimer?.Dispose();
 		RefreshTokensTimer?.Dispose();
 		SendItemsTimer?.Dispose();
-		SteamSaleEvent?.Dispose();
 		TradeCheckTimer?.Dispose();
 	}
 
@@ -463,10 +453,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 		if (SendItemsTimer != null) {
 			await SendItemsTimer.DisposeAsync().ConfigureAwait(false);
-		}
-
-		if (SteamSaleEvent != null) {
-			await SteamSaleEvent.DisposeAsync().ConfigureAwait(false);
 		}
 
 		if (TradeCheckTimer != null) {
@@ -653,7 +639,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 					result.UnionWith(regexMatches);
 				} catch (RegexMatchTimeoutException e) {
-					ASF.ArchiLogger.LogGenericException(e);
+					ASF.ArchiLogger.LogGenericWarningException(e);
 				}
 
 				continue;
@@ -772,7 +758,8 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 		}
 
 		byte maxPages = 1;
-		INode? htmlNode = badgePage.SelectSingleNode("(//a[@class='pagelink'])[last()]");
+
+		IElement? htmlNode = badgePage.QuerySelectorAll("a[class='pagelink']").LastOrDefault();
 
 		if (htmlNode != null) {
 			string lastPage = htmlNode.TextContent;
@@ -1118,7 +1105,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 		ArgumentOutOfRangeException.ThrowIfZero(appID);
 		ArgumentOutOfRangeException.ThrowIfNegative(hoursPlayed);
 
-		HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(appID, OwnedPackageIDs.Keys);
+		HashSet<uint>? packageIDs = ASF.GlobalDatabase?.GetPackageIDs(appID, OwnedPackages.Keys);
 
 		if ((packageIDs == null) || (packageIDs.Count == 0)) {
 			return (0, DateTime.MaxValue, true);
@@ -1128,7 +1115,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 			DateTime mostRecent = DateTime.MinValue;
 
 			foreach (uint packageID in packageIDs) {
-				if (!OwnedPackageIDs.TryGetValue(packageID, out (EPaymentMethod PaymentMethod, DateTime TimeCreated) packageData)) {
+				if (!OwnedPackages.TryGetValue(packageID, out LicenseData? packageData)) {
 					continue;
 				}
 
@@ -1153,7 +1140,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 			DateTime safePlayableBefore = DateTime.UtcNow.AddMonths(-RegionRestrictionPlayableBlockMonths);
 
 			foreach (uint packageID in packageIDs) {
-				if (!OwnedPackageIDs.TryGetValue(packageID, out (EPaymentMethod PaymentMethod, DateTime TimeCreated) ownedPackageData)) {
+				if (!OwnedPackages.TryGetValue(packageID, out LicenseData? ownedPackageData)) {
 					// We don't own that packageID, keep checking
 					continue;
 				}
@@ -1824,13 +1811,13 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 			string newFilePath = GetFilePath(newBotName, fileType);
 
 			if (string.IsNullOrEmpty(newFilePath)) {
-				ArchiLogger.LogNullError(newFilePath);
-
-				return false;
+				throw new InvalidOperationException(nameof(newFilePath));
 			}
 
 			try {
+#pragma warning disable CA3003 // New file path derived from bot's name that was validated above
 				File.Move(filePath, newFilePath);
+#pragma warning restore CA3003 // New file path derived from bot's name that was validated above
 			} catch (Exception e) {
 				ArchiLogger.LogGenericException(e);
 
@@ -2101,6 +2088,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 	}
 
 	private void DisposeShared() {
+		ArchiHandler.Dispose();
 		ArchiWebHandler.Dispose();
 		BotDatabase.Dispose();
 		ConnectionSemaphore.Dispose();
@@ -2172,16 +2160,18 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 		return GetPossiblyCompletedBadgeAppIDs(badgePage);
 	}
 
-	private HashSet<uint>? GetPossiblyCompletedBadgeAppIDs(IDocument badgePage) {
+	private HashSet<uint>? GetPossiblyCompletedBadgeAppIDs(IParentNode badgePage) {
 		ArgumentNullException.ThrowIfNull(badgePage);
 
 		// We select badges that are ready to craft, as well as those that are already crafted to a maximum level, as those will not display with a craft button
 		// Level 5 is maximum level for card badges according to https://steamcommunity.com/tradingcards/faq
-		IEnumerable<IAttr> linkElements = badgePage.SelectNodes<IAttr>("//a[@class='badge_craft_button']/@href | //div[@class='badges_sheet']/div[contains(@class, 'badge_row') and .//div[@class='badge_info_description']/div[contains(text(), 'Level 5')]]/a[@class='badge_row_overlay']/@href");
+		IHtmlCollection<IElement> craftNodes = badgePage.QuerySelectorAll("a[class='badge_craft_button'][href]");
+
+		IEnumerable<IElement?> maxBadgeNodes = badgePage.QuerySelectorAll("div[class='badge_row is_link']").Where(static htmlNode => htmlNode.QuerySelector("div[class='badge_info_description']")?.TextContent.Contains("Level 5", StringComparison.Ordinal) == true).Select(static htmlNode => htmlNode.QuerySelector("a[class='badge_row_overlay'][href]"));
 
 		HashSet<uint> result = [];
 
-		foreach (string badgeUri in linkElements.Select(static htmlNode => htmlNode.Value)) {
+		foreach (string? badgeUri in craftNodes.Concat(maxBadgeNodes).Select(static htmlNode => htmlNode?.GetAttribute("href"))) {
 			if (string.IsNullOrEmpty(badgeUri)) {
 				ArchiLogger.LogNullError(badgeUri);
 
@@ -2504,12 +2494,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 			SendItemsTimer = null;
 		}
 
-		if (SteamSaleEvent != null) {
-			await SteamSaleEvent.DisposeAsync().ConfigureAwait(false);
-
-			SteamSaleEvent = null;
-		}
-
 		if (TradeCheckTimer != null) {
 			await TradeCheckTimer.DisposeAsync().ConfigureAwait(false);
 
@@ -2523,10 +2507,6 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 				TimeSpan.FromHours(BotConfig.SendTradePeriod) + TimeSpan.FromSeconds(ASF.LoadBalancingDelay * Bots.Count), // Delay
 				TimeSpan.FromHours(BotConfig.SendTradePeriod) // Period
 			);
-		}
-
-		if (BotConfig.FarmingPreferences.HasFlag(BotConfig.EFarmingPreferences.AutoSteamSaleEvent)) {
-			SteamSaleEvent = new SteamSaleEvent(this);
 		}
 
 		if (BotConfig.TradeCheckPeriod > 0) {
@@ -2864,7 +2844,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 		Trading.OnDisconnected();
 
 		FirstTradeSent = false;
-		OwnedPackageIDs = FrozenDictionary<uint, (EPaymentMethod PaymentMethod, DateTime TimeCreated)>.Empty;
+		OwnedPackages = FrozenDictionary<uint, LicenseData>.Empty;
 
 		EResult lastLogOnResult = LastLogOnResult;
 
@@ -3188,17 +3168,22 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 
 		Commands.OnNewLicenseList();
 
-		Dictionary<uint, (EPaymentMethod PaymentMethod, DateTime TimeCreated)> ownedPackageIDs = new();
+		Dictionary<uint, LicenseData> ownedPackages = new();
 
 		Dictionary<uint, ulong> packageAccessTokens = new();
 		Dictionary<uint, uint> packagesToRefresh = new();
 
 		bool hasNewEntries = false;
 
-		foreach (SteamApps.LicenseListCallback.License license in callback.LicenseList.GroupBy(static license => license.PackageID, static (_, licenses) => licenses.OrderByDescending(static license => license.TimeCreated).First())) {
-			ownedPackageIDs[license.PackageID] = (license.PaymentMethod, license.TimeCreated);
+		// We want to record only the most relevant entry from non-borrowed games, therefore we also apply ordering here
+		foreach (SteamApps.LicenseListCallback.License license in callback.LicenseList.Where(static license => !license.LicenseFlags.HasFlag(ELicenseFlags.Borrowed)).OrderByDescending(static license => license.TimeCreated).Where(license => !ownedPackages.ContainsKey(license.PackageID))) {
+			ownedPackages[license.PackageID] = new LicenseData {
+				PackageID = license.PackageID,
+				PaymentMethod = license.PaymentMethod,
+				TimeCreated = license.TimeCreated
+			};
 
-			if (!OwnedPackageIDs.ContainsKey(license.PackageID)) {
+			if (!OwnedPackages.ContainsKey(license.PackageID)) {
 				hasNewEntries = true;
 			}
 
@@ -3212,7 +3197,7 @@ public sealed class Bot : IAsyncDisposable, IDisposable {
 			}
 		}
 
-		OwnedPackageIDs = ownedPackageIDs.ToFrozenDictionary();
+		OwnedPackages = ownedPackages.ToFrozenDictionary();
 
 		if (packageAccessTokens.Count > 0) {
 			ASF.GlobalDatabase.RefreshPackageAccessTokens(packageAccessTokens);

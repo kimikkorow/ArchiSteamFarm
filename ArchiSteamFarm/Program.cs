@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Quic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -534,14 +532,7 @@ internal static class Program {
 		ArgumentNullException.ThrowIfNull(e);
 		ArgumentNullException.ThrowIfNull(e.Exception);
 
-		// TODO: Remove conditionally ignoring exceptions once reports are resolved
-		// https://github.com/dotnet/runtime/issues/80111
-		// https://github.com/dotnet/runtime/issues/102772
-		bool ignored = e.Exception.InnerExceptions.Any(static exception => exception is HttpIOException or QuicException);
-
-		if (!ignored) {
-			await ASF.ArchiLogger.LogFatalException(e.Exception).ConfigureAwait(false);
-		}
+		await ASF.ArchiLogger.LogFatalException(e.Exception).ConfigureAwait(false);
 
 		// Normally we should abort the application, but due to the fact that unobserved exceptions do not have to do that, it's a better idea to log it and try to continue
 		e.SetObserved();

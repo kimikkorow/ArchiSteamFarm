@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,20 +29,20 @@ namespace ArchiSteamFarm.Steam.Cards;
 
 public sealed class Game : IEquatable<Game> {
 	[JsonInclude]
-	[Required]
 	public uint AppID { get; }
 
 	[JsonInclude]
-	[Required]
 	public string GameName { get; }
 
 	internal readonly byte BadgeLevel;
 
 	[JsonInclude]
+	[JsonRequired]
 	[Required]
 	public ushort CardsRemaining { get; internal set; }
 
 	[JsonInclude]
+	[JsonRequired]
 	[Required]
 	public float HoursPlayed { get; internal set; }
 
