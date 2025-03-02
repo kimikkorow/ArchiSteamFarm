@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,7 @@ using ArchiSteamFarm.IPC.Responses;
 using ArchiSteamFarm.Localization;
 using ArchiSteamFarm.Steam;
 using ArchiSteamFarm.Storage;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 
@@ -46,14 +47,8 @@ public sealed class CommandController : ArchiController {
 		ApplicationLifetime = applicationLifetime;
 	}
 
-	/// <summary>
-	///     Executes a command.
-	/// </summary>
-	/// <remarks>
-	///     This API endpoint is supposed to be entirely replaced by ASF actions available under /Api/ASF/{action} and /Api/Bot/{bot}/{action}.
-	///     You should use "given bot" commands when executing this endpoint, omitting targets of the command will cause the command to be executed on first defined bot
-	/// </remarks>
-	[Consumes("application/json")]
+	[EndpointDescription($"This API endpoint is supposed to be entirely replaced by ASF actions available under /Api/ASF/{{action}} and /Api/Bot/{{bot}}/{{action}}. You should use \"given bot\" commands when executing this endpoint, omitting targets of the command will cause the command to be executed on {nameof(GlobalConfig.DefaultBot)}")]
+	[EndpointSummary("Executes a command")]
 	[HttpPost]
 	[ProducesResponseType<GenericResponse<string>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]

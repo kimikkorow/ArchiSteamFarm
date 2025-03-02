@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,19 +31,35 @@ using ArchiSteamFarm.Localization;
 using ArchiSteamFarm.Plugins;
 using ArchiSteamFarm.Plugins.Interfaces;
 using ArchiSteamFarm.Steam.Interaction;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchiSteamFarm.IPC.Controllers.Api;
 
 [Route("Api/Plugins")]
 public sealed class PluginsController : ArchiController {
+	[EndpointSummary("Gets active plugins loaded into the process")]
 	[HttpGet]
 	[ProducesResponseType<GenericResponse<IReadOnlyCollection<IPlugin>>>((int) HttpStatusCode.OK)]
-	public ActionResult<GenericResponse<IReadOnlyCollection<IPlugin>>> PluginsGet() => Ok(new GenericResponse<IReadOnlyCollection<IPlugin>>(PluginsCore.ActivePlugins));
+	public ActionResult<GenericResponse<IReadOnlyCollection<IPlugin>>> PluginsGet([FromQuery] bool official = true, [FromQuery] bool custom = true) {
+		HashSet<IPlugin> result = [];
 
-	/// <summary>
-	///     Makes ASF update selected plugins.
-	/// </summary>
+		foreach (IPlugin plugin in PluginsCore.ActivePlugins) {
+			if (plugin is OfficialPlugin) {
+				if (official) {
+					result.Add(plugin);
+				}
+			} else {
+				if (custom) {
+					result.Add(plugin);
+				}
+			}
+		}
+
+		return Ok(new GenericResponse<IReadOnlyCollection<IPlugin>>(result));
+	}
+
+	[EndpointSummary("Makes ASF update selected plugins")]
 	[HttpPost("Update")]
 	[ProducesResponseType<GenericResponse<string>>((int) HttpStatusCode.OK)]
 	public async Task<ActionResult<GenericResponse<string>>> UpdatePost([FromBody] PluginUpdateRequest request) {

@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,18 +26,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using ArchiSteamFarm.IPC.Responses;
 using ArchiSteamFarm.Localization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchiSteamFarm.IPC.Controllers.Api;
 
 [Route("Api/Structure")]
 public sealed class StructureController : ArchiController {
-	/// <summary>
-	///     Fetches structure of given type.
-	/// </summary>
-	/// <remarks>
-	///     Structure is defined as a representation of given object in its default state.
-	/// </remarks>
+	[EndpointDescription("Structure is defined as a representation of given object in its default state")]
+	[EndpointSummary("Fetches structure of given type")]
 	[HttpGet("{structure:required}")]
 	[ProducesResponseType<GenericResponse<object>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]

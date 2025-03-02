@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,21 +22,26 @@
 // limitations under the License.
 
 using System;
-using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace ArchiSteamFarm.IPC.Integration;
+namespace ArchiSteamFarm.Helpers.Json;
 
-[UsedImplicitly]
-internal sealed class ReadOnlyFixesSchemaFilter : ISchemaFilter {
-	public void Apply(OpenApiSchema schema, SchemaFilterContext context) {
-		ArgumentNullException.ThrowIfNull(schema);
-		ArgumentNullException.ThrowIfNull(context);
+[PublicAPI]
+public sealed class BooleanNormalizationConverter : JsonConverter<bool> {
+	public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+		reader.TokenType switch {
+			JsonTokenType.True => true,
+			JsonTokenType.False => false,
+			JsonTokenType.Number => reader.GetByte() == 1,
+			JsonTokenType.String => reader.GetString() == "1",
+			_ => throw new JsonException()
+		};
 
-		if (schema.ReadOnly && context.MemberInfo is PropertyInfo { CanWrite: true }) {
-			schema.ReadOnly = false;
-		}
+	public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options) {
+		ArgumentNullException.ThrowIfNull(writer);
+
+		writer.WriteBooleanValue(value);
 	}
 }

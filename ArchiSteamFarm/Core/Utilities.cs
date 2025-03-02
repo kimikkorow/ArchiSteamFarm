@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,8 +35,6 @@ using System.Resources;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp.Dom;
-using AngleSharp.XPath;
 using ArchiSteamFarm.Localization;
 using ArchiSteamFarm.NLog;
 using ArchiSteamFarm.Storage;
@@ -61,6 +59,13 @@ public static class Utilities {
 
 		// See: https://github.com/dotnet/runtime/discussions/50687
 		return collection.Select(static entry => entry);
+	}
+
+	[PublicAPI]
+	public static string AsMasked(this string text, char mask = '*') {
+		ArgumentNullException.ThrowIfNull(text);
+
+		return new string(mask, text.Length);
 	}
 
 	[PublicAPI]
@@ -188,48 +193,6 @@ public static class Utilities {
 		ArgumentException.ThrowIfNullOrEmpty(text);
 
 		return (text.Length % 2 == 0) && text.All(Uri.IsHexDigit);
-	}
-
-	[PublicAPI]
-	public static IList<INode> SelectNodes(this IDocument document, string xpath) {
-		ArgumentNullException.ThrowIfNull(document);
-
-		return document.Body.SelectNodes(xpath);
-	}
-
-	[PublicAPI]
-	public static IEnumerable<T> SelectNodes<T>(this IDocument document, string xpath) where T : class, INode {
-		ArgumentNullException.ThrowIfNull(document);
-
-		return document.Body.SelectNodes(xpath).OfType<T>();
-	}
-
-	[PublicAPI]
-	public static IEnumerable<T> SelectNodes<T>(this IElement element, string xpath) where T : class, INode {
-		ArgumentNullException.ThrowIfNull(element);
-
-		return element.SelectNodes(xpath).OfType<T>();
-	}
-
-	[PublicAPI]
-	public static INode? SelectSingleNode(this IDocument document, string xpath) {
-		ArgumentNullException.ThrowIfNull(document);
-
-		return document.Body.SelectSingleNode(xpath);
-	}
-
-	[PublicAPI]
-	public static T? SelectSingleNode<T>(this IDocument document, string xpath) where T : class, INode {
-		ArgumentNullException.ThrowIfNull(document);
-
-		return document.Body.SelectSingleNode(xpath) as T;
-	}
-
-	[PublicAPI]
-	public static T? SelectSingleNode<T>(this IElement element, string xpath) where T : class, INode {
-		ArgumentNullException.ThrowIfNull(element);
-
-		return element.SelectSingleNode(xpath) as T;
 	}
 
 	[PublicAPI]

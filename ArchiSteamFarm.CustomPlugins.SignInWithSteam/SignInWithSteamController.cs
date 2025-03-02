@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,7 @@ public sealed class SignInWithSteamController : ArchiController {
 			return StatusCode((int) HttpStatusCode.ServiceUnavailable, new GenericResponse(false, Strings.FormatErrorRequestFailedTooManyTimes(WebBrowser.MaxTries)));
 		}
 
-		IAttr? paramsNode = challengeResponse.Content.SelectSingleNode<IAttr>("//input[@name='openidparams']/@value");
+		IElement? paramsNode = challengeResponse.Content.QuerySelector("input[name='openidparams'][value]");
 
 		if (paramsNode == null) {
 			ASF.ArchiLogger.LogNullError(paramsNode);
@@ -74,7 +74,7 @@ public sealed class SignInWithSteamController : ArchiController {
 			return StatusCode((int) HttpStatusCode.InternalServerError, new GenericResponse(false, Strings.FormatErrorObjectIsNull(nameof(paramsNode))));
 		}
 
-		string paramsValue = paramsNode.Value;
+		string? paramsValue = paramsNode.GetAttribute("value");
 
 		if (string.IsNullOrEmpty(paramsValue)) {
 			ASF.ArchiLogger.LogNullError(paramsValue);
@@ -82,7 +82,7 @@ public sealed class SignInWithSteamController : ArchiController {
 			return StatusCode((int) HttpStatusCode.InternalServerError, new GenericResponse(false, Strings.FormatErrorObjectIsNull(nameof(paramsValue))));
 		}
 
-		IAttr? nonceNode = challengeResponse.Content.SelectSingleNode<IAttr>("//input[@name='nonce']/@value");
+		IElement? nonceNode = challengeResponse.Content.QuerySelector("input[name='nonce'][value]");
 
 		if (nonceNode == null) {
 			ASF.ArchiLogger.LogNullError(nonceNode);
@@ -90,7 +90,7 @@ public sealed class SignInWithSteamController : ArchiController {
 			return StatusCode((int) HttpStatusCode.InternalServerError, new GenericResponse(false, Strings.FormatErrorObjectIsNull(nameof(nonceNode))));
 		}
 
-		string nonceValue = nonceNode.Value;
+		string? nonceValue = nonceNode.GetAttribute("value");
 
 		if (string.IsNullOrEmpty(nonceValue)) {
 			ASF.ArchiLogger.LogNullError(nonceValue);

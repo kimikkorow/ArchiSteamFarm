@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,18 +32,15 @@ using System.Text.Json.Serialization;
 using ArchiSteamFarm.Core;
 using ArchiSteamFarm.IPC.Responses;
 using ArchiSteamFarm.Localization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchiSteamFarm.IPC.Controllers.Api;
 
 [Route("Api/Type")]
 public sealed class TypeController : ArchiController {
-	/// <summary>
-	///     Fetches type info of given type.
-	/// </summary>
-	/// <remarks>
-	///     Type info is defined as a representation of given object with its fields and properties being assigned to a string value that defines their type.
-	/// </remarks>
+	[EndpointDescription("Type info is defined as a representation of given object with its fields and properties being assigned to a string value that defines their type")]
+	[EndpointSummary("Fetches type info of given type")]
 	[HttpGet("{type:required}")]
 	[ProducesResponseType<GenericResponse<TypeResponse>>((int) HttpStatusCode.OK)]
 	[ProducesResponseType<GenericResponse>((int) HttpStatusCode.BadRequest)]

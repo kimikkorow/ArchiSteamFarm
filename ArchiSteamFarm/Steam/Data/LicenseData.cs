@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,19 +21,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
+using System;
+using JetBrains.Annotations;
+using SteamKit2;
 
 namespace ArchiSteamFarm.Steam.Data;
 
-[SuppressMessage("ReSharper", "ClassCannotBeInstantiated")]
-internal sealed class NewDiscoveryQueueResponse {
-	[JsonInclude]
-	[JsonPropertyName("queue")]
-	[JsonRequired]
-	internal ImmutableHashSet<uint> Queue { get; private init; } = [];
+public sealed record LicenseData {
+	[PublicAPI]
+	public required uint PackageID { get; init; }
 
-	[JsonConstructor]
-	private NewDiscoveryQueueResponse() { }
+	[PublicAPI]
+	public required EPaymentMethod PaymentMethod { get; init; }
+
+	[PublicAPI]
+	public required DateTime TimeCreated { get; init; }
 }

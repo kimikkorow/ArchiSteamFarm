@@ -6,7 +6,7 @@
 // /_/   \_\|_|   \___||_| |_||_||____/  \__|\___| \__,_||_| |_| |_||_|   \__,_||_|   |_| |_| |_|
 // ----------------------------------------------------------------------------------------------
 // |
-// Copyright 2015-2024 Łukasz "JustArchi" Domeradzki
+// Copyright 2015-2025 Łukasz "JustArchi" Domeradzki
 // Contact: JustArchi@JustArchi.net
 // |
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -30,17 +31,13 @@ namespace ArchiSteamFarm.IPC.Requests;
 
 [SuppressMessage("ReSharper", "ClassCannotBeInstantiated")]
 public sealed class BotInputRequest {
-	/// <summary>
-	///     Specifies the type of the input.
-	/// </summary>
+	[Description("Specifies the type of the input")]
 	[JsonInclude]
 	[JsonRequired]
 	[Required]
 	public ASF.EUserInputType Type { get; private init; }
 
-	/// <summary>
-	///     Specifies the value for given input type (declared in <see cref="Type" />)
-	/// </summary>
+	[Description($"Specifies the value for given input type (declared in {nameof(Type)})")]
 	[JsonInclude]
 	[JsonRequired]
 	[Required]

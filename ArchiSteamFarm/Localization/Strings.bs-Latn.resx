@@ -374,12 +374,11 @@
 	
 	
 	
-	
-	
 	<data name="BotLevel" xml:space="preserve">
 		<value>Bot je nivo {0}.</value>
 		<comment>{0} will be replaced by bot's level</comment>
 	</data>
+	
 	
 	
 	<data name="ErrorAborted" xml:space="preserve">
@@ -418,6 +417,7 @@
 		<value>Rezultat: {0}</value>
 		<comment>{0} will be replaced by generic result of various functions that use this string</comment>
 	</data>
+	
 	
 	
 	
